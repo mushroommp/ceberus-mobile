@@ -40,19 +40,10 @@ const ApplicationNavigator = () => {
 
     return (
         <NavigationContainer>
-            <Stack.Navigator initialRouteName="SignIn" headerMode="none">
-                {
-                    isSignedIn ? (
-                        <>
-                        <Stack.Screen name="MainNavigator" component={MainNavigator} />
-                        </>
-                    ) : (
-                        <>
-                            <Stack.Screen name="SignInContainer" component={SignInContainer} />
-                            <Stack.Screen name="SignUpContainer" component={SignUpContainer} />
-                        </>
-                    )
-                }
+            <Stack.Navigator initialRouteName="SignInContainer" headerMode="none">
+                <Stack.Screen name="MainNavigator" component={MainNavigator} />
+                <Stack.Screen name="SignInContainer" component={SignInContainer} />
+                <Stack.Screen name="SignUpContainer" component={SignUpContainer} />
             </Stack.Navigator>
         </NavigationContainer>
 

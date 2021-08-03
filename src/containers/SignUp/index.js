@@ -7,6 +7,7 @@ import {
     TouchableOpacity
 } from 'react-native'
 import axios from 'axios'
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const SignUpContainer = () => {
     const [userEmail, setUserEmail] = useState('')
@@ -14,7 +15,6 @@ const SignUpContainer = () => {
     const [errorText, setErrorText] = useState('')
 
     const onSubmit = () => {
-        console.log(" TEST ")
         let userDetails = {
             user_email: userEmail
         }
@@ -22,12 +22,14 @@ const SignUpContainer = () => {
         axios.post('http://localhost:5000/api/users', userDetails)
         .then(function (response) {
             // handle success
-            console.log("SUCCESS MOBILE", response);
+            const jsonValue = JSON.stringify(response.data)
+            console.log(" JSON VALUE ", jsonValue)
+            // await AsyncStorage.setItem('account_login', {
+            //     token: 
+            // })
         })
         .catch(function (error) {
             console.log(" TEST ERROR ", error)
-            setDisplayError(true)
-            setErrorText(error.response.data)
         })
     }
 

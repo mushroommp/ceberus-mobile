@@ -6,12 +6,46 @@ import {
     SafeAreaView,
     TouchableOpacity,
     StyleSheet,
-    Dimensions
+    Dimensions,
+    Alert
 } from 'react-native'
+import axios from 'axios'
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const SignInContainer = () => {
-    const [username, setUserName] = useState('')
+const SignInContainer = ({ navigation }) => {
+    const [userEmail, setUserEmail] = useState('')
     const [password, setUserPassword] = useState('')
+
+    const onSubmit = () => {
+        let userDetails = {
+            email: userEmail,
+            password
+        }
+
+        axios.post('http://localhost:5000/api/auth/login', userDetails)
+        .then(async function (response) {
+            if(response.status === 200){
+                const jsonValue = response.data
+                let token = jsonValue.token
+                let userName = jsonValue.user.username
+                let userEmail = jsonValue.user.email
+                let userHederaId = jsonValue.user.hederaAccountId
+
+                let userDetails = {
+                    token,
+                    userName,
+                    userEmail,
+                    userHederaId
+                }
+
+                await AsyncStorage.setItem('account_login', JSON.stringify(userDetails))
+                navigation.navigate('MainNavigator')
+            }
+        })
+        .catch(function (error) {
+            return Alert.alert("Error", error.response.data.message)
+        })
+    }
 
     return (
         <SafeAreaView style = {{ flex: 1, backgroundColor: '#028090' }}>
@@ -21,8 +55,8 @@ const SignInContainer = () => {
                     <View style={{ paddingVertical: 20 }}>
                         <Text style={styles.headerTxt}>Email</Text>
                         <TextInput 
-                            onChangeText={setUserName}
-                            value={username}
+                            onChangeText={setUserEmail}
+                            value={userEmail}
                             placeholder={'Enter your email'}
                             style={{ 
                                 borderBottomWidth: 1,
@@ -46,7 +80,7 @@ const SignInContainer = () => {
                             autoCorrect={false}
                         />
                     </View>
-                    <TouchableOpacity style={styles.signInBtn}>
+                    <TouchableOpacity style={styles.signInBtn} onPress = {onSubmit}>
                         <Text style={styles.loginTxt}>Login</Text>
                     </TouchableOpacity>
                     <View style={{ marginTop: 12, alignItems: 'center' }}>

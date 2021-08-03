@@ -12,6 +12,7 @@ import {
 import { TransactionRow } from '../../components'
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import axios from 'axios'
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const styles = {
     transactionBar: {
@@ -79,6 +80,7 @@ const mockTransactions = [
 const HomeContainer = () => {
     const [transactions, setTransactions] = useState([...mockTransactions])
     const [pointValue, setPoints] = useState('0')
+    const [userDisplayName, setUserDisplayName] = useState('')
 
     const renderItem = ({ item, index }) => (
         <TransactionRow 
@@ -90,26 +92,44 @@ const HomeContainer = () => {
         />
     );
 
-    const getUserBalance = () => {
-        axios.get('http://localhost:5000/api/users', {
-            params: {
-                email: "demo.user03@mail.com"
-            }
-        })
-        .then(function (response) {
-            // handle success
-            console.log("SUCCESS MOBILE", response);
-            let userPoints = response.data.accountBalance
-            setPoints(userPoints)
-        })
-        .catch(function (error) {
-            console.log(" TEST ERROR ", error)
-            
-        })
+    const getUserName = async () => {
+        const value = await AsyncStorage.getItem('account_login');
+
+        if(value !== null){
+            let parsedData = JSON.parse(value)
+            let displayName = parsedData.userName
+            setUserDisplayName(displayName)
+        }
+    }
+
+    const getUserBalance = async () => {
+        const value = await AsyncStorage.getItem('account_login');
+        if (value !== null) {
+            let parsedData = JSON.parse(value)
+            let userId = parsedData.userHederaId
+
+            axios.get('http://localhost:5000/api/users/token-balance', {
+                params: {
+                    hederaId: userId
+                }
+            })
+            .then(function (response) {
+                let data = response.data
+                let accountBalance = data.account_balance
+                setPoints(accountBalance.hbars)
+                console.log("SUCCESS MOBILE", response);
+                
+            })
+            .catch(function (error) {
+                console.log(" TEST ERROR ", error.response)
+                
+            })
+        }
     }
 
     useEffect(() => {
         getUserBalance()
+        getUserName()
     }, []);
 
     return (
@@ -117,7 +137,7 @@ const HomeContainer = () => {
             <View style = {{ flex: 1, backgroundColor: '#4B9EB8' }}>
                 <View style = {styles.topContainer}>
                     <View style = {{ alignItems: 'center', justifyContent: 'center', flex: 1 }}>
-                        <Text style = {styles.welcomeTxt}>Welcome There!</Text>
+                        <Text style = {styles.welcomeTxt}>{`Welcome ${userDisplayName}!`}</Text>
                     </View>
                     <View style = {{ justifyContent: 'center', alignItems: 'center', flex: 2 }}>
                         <Text style = {styles.headingTxt}>Available Points</Text>
